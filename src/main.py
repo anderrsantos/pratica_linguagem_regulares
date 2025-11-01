@@ -1,4 +1,4 @@
-from converterAFNEpAFD  import AFNEpAFD
+from converterAFNEpAFN  import AFNEpAFN
 
 def main():
     while True:
@@ -10,7 +10,7 @@ def main():
         print("1 - Converter AFN-E para AFD")
         print("2 - Converter AFN para AFD")
         print("3 - Minimizar AFD")
-        print("4 - Testar palavra em AFD")
+        print("4 - Testar palavra")
         print("5 - Sair")
         
         opcao = input("Escolha uma opcao: ")
@@ -22,9 +22,9 @@ def main():
                 continue
             elif opcao_int == 1:
                 try:
-                    converterAFNEpAFD = AFNEpAFD()
+                    converterAFNEpAFD = AFNEpAFN()
                 except Exception as e:
-                    print(f"\n❌ Ocorreu um erro durante a conversão: {e}")
+                    print(f"\nOcorreu um erro durante a conversão: {e}")
             elif opcao_int == 2:
                 continue
             elif opcao_int == 3:
@@ -35,10 +35,10 @@ def main():
                 print("\nEncerrando o programa. Até logo!")
                 break 
             else:
-                print("\n❌ Opção inválida! Por favor, escolha um número de 0 a 5.")
+                print("\nOpção inválida! Por favor, escolha um número de 0 a 5.")
                 
         except ValueError:
-            print("\n❌ Entrada inválida! Por favor, digite apenas o número da opção.")
+            print("\nEntrada inválida! Por favor, digite apenas o número da opção.")
 
 if __name__ == "__main__":
     main()
