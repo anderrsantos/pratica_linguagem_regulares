@@ -1,2 +1,69 @@
 # pratica_linguagem_regulares
 Prática dos conceitos de Linguagens Regulares dos Autômatos Finitos
+
+## Como executar
+
+Requisitos: Python 3.8+
+
+No Linux:
+
+```
+python3 src/main.py
+```
+
+## Testar palavra (opção 4 do menu)
+
+Você pode testar palavras de duas formas:
+
+1) Carregar um autômato de um arquivo JSON (ex.: `automato.json`)
+2) Informar o autômato pelo terminal (alfabeto, estados, iniciais, finais e transições)
+
+### Formato do JSON
+
+Exemplo de `automato.json` (válido em JSON):
+
+```json
+{
+	"alfabeto": ["a", "b"],
+	"estados": ["Q1", "Q2", "QF"],
+	"estadosF": ["QF"],
+	"estadosI": ["Q1"],
+	"transicoes": [
+		["Q1", "Q1", "a"],
+		["Q1", "Q2", "b"],
+		["Q2", "QF", "a"],
+		["Q2", "Q2", "a"],
+		["QF", "QF", "a"],
+		["QF", "QF", "b"]
+	]
+}
+```
+
+Observações:
+- `transicoes` é uma lista de trios `[origem, destino, simbolo]`. Também aceitamos objetos `{ "origem": "Q1", "destino": "Q2", "simbolo": "a" }`.
+- O símbolo `"ε"` (epsilon) é suportado para AFN-ε.
+- Se você tiver o campo escrito como `alfabet0` (com zero), ele será aceito e mapeado para `alfabeto`.
+
+### Teste pelo terminal
+
+Ao escolher testar pelo terminal, informe:
+- Alfabeto: `a,b`
+- Estados: `Q1,Q2,QF`
+- Estados iniciais: `Q1`
+- Estados finais: `QF`
+- Transições no formato `origem,simbolo,destino` (use `ε` para epsilon). Digite `fim` para encerrar.
+
+### Critérios de aceitação
+
+O simulador suporta AFN e AFN-ε:
+- A palavra é aceita se, após consumir todos os símbolos (com fechos-ε quando existirem), algum estado alcançado é final.
+- Símbolos fora do alfabeto fazem a palavra ser rejeitada por padrão.
+
+## Converter AFN-ε → AFN (opção 1 do menu)
+
+Agora você pode montar o AFN-ε pelo terminal ou carregar de um arquivo JSON (mesmo formato descrito acima). O conversor aceita:
+- `transicoes` como `[origem, simbolo, destino]` ou `[origem, destino, simbolo]` (o código detecta automaticamente o formato) e também objetos `{origem,destino,simbolo}`.
+- Campo `alfabet0` como sinônimo de `alfabeto`.
+
+Saída: imprime um AFN equivalente sem transições ε, com estados iniciais expandidos pelo fecho-ε e novos estados finais conforme o fecho.
+

@@ -1,4 +1,5 @@
 from converterAFNEpAFN  import AFNEpAFN
+from testar_palavra import testar_palavra_cli
 
 def main():
     while True:
@@ -30,7 +31,10 @@ def main():
             elif opcao_int == 3:
                 continue
             elif opcao_int == 4:
-                continue
+                try:
+                    testar_palavra_cli()
+                except Exception as e:
+                    print(f"\nOcorreu um erro ao testar palavra: {e}")
             elif opcao_int == 5:
                 print("\nEncerrando o programa. Até logo!")
                 break 

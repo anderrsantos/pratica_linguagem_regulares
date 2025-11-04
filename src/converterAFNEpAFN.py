@@ -1,3 +1,6 @@
+import json
+from testar_palavra import Automato
+
 # Classe feita por Anderson R. Santos
 class AFNEpAFN:
     def __init__(self):
@@ -31,21 +34,62 @@ class AFNEpAFN:
         print("\n=========================")
         print("Conversor AFNε → AFN (múltiplos estados iniciais)")
         print("=========================\n")
+
+        print("1 - Carregar AFN-ε de arquivo JSON (ex: automato.json)")
+        print("2 - Informar AFN-ε pelo terminal")
+        modo = input("Escolha o modo (1/2): ").strip()
+
+        if modo == '1':
+            self._carregar_de_json()
+            print("AFNε carregado do JSON.\n")
+            return
+
+        # Modo interativo (terminal)
         self.alfabeto = input("Informe o alfabeto (ex: a,b): ").split(',')
         self.estados = input("Informe os estados (ex: q0,q1,q2): ").split(',')
         self.estados_iniciais = input("Informe os estados iniciais (ex: q0,q1): ").split(',')
-        self.estados_finais = input("Informe os estados finais (ex: q2,q2): ").split(',')
-        
+        self.estados_finais = input("Informe os estados finais (ex: q2): ").split(',')
+
         print("Informe as transições (formato: estado,simbolo,estado_destino). Use 'ε' para epsilon. Digite 'fim' para encerrar.")
         while True:
             linha = input("Transição: ")
             if linha.lower() == 'fim':
                 break
-            origem, simbolo, destino = linha.split(',')
+            origem, simbolo, destino = [p.strip() for p in linha.split(',')]
             if (origem, simbolo) not in self.transicoes:
                 self.transicoes[(origem, simbolo)] = []
             self.transicoes[(origem, simbolo)].append(destino)
         print("AFNε carregado.\n")
+
+    def _carregar_de_json(self):
+        caminho = input("Caminho do arquivo JSON [automato.json]: ").strip() or "automato.json"
+        # Reutiliza o carregador já implementado no módulo de teste
+        automato = Automato.from_json(caminho)
+
+        # Copia dados para a estrutura esperada pelo conversor
+        self.alfabeto = list(automato.alfabeto)
+        self.estados = list(automato.estados)
+        self.estados_iniciais = list(automato.iniciais)
+        self.estados_finais = list(automato.finais)
+
+        # Converter de {origem: {simbolo: {destinos}}} para {(origem, simbolo): [destinos]}
+        self.transicoes = {}
+        for origem, mapa in automato.transicoes.items():
+            for simbolo, destinos in mapa.items():
+                self.transicoes[(origem, simbolo)] = list(destinos)
+
+    def _coletar_lista(self, obj):
+        # aceita lista JSON ou string separada por vírgulas (com/sem chaves)
+        if isinstance(obj, list):
+            return [str(x).strip() for x in obj]
+        if isinstance(obj, str):
+            s = obj.strip().strip('{}[]()')
+            if not s:
+                return []
+            if ',' in s:
+                return [p.strip().strip("'\"") for p in s.split(',') if p.strip()]
+            return [s]
+        raise Exception('Campo deve ser lista ou string.')
 
     
     def tela_final(self):
