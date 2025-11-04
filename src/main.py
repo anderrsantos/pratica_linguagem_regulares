@@ -1,4 +1,5 @@
 from converterAFNEpAFN  import AFNEpAFN
+from converterAFNparaAFD import converter_afn_para_afd_cli
 from testar_palavra import testar_palavra_cli
 
 def main():
@@ -27,7 +28,10 @@ def main():
                 except Exception as e:
                     print(f"\nOcorreu um erro durante a conversão: {e}")
             elif opcao_int == 2:
-                continue
+                try:
+                    converter_afn_para_afd_cli()
+                except Exception as e:
+                    print(f"\nOcorreu um erro durante a conversão AFN→AFD: {e}")
             elif opcao_int == 3:
                 continue
             elif opcao_int == 4:

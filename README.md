@@ -67,3 +67,14 @@ Agora você pode montar o AFN-ε pelo terminal ou carregar de um arquivo JSON (m
 
 Saída: imprime um AFN equivalente sem transições ε, com estados iniciais expandidos pelo fecho-ε e novos estados finais conforme o fecho.
 
+## Converter AFN → AFD (opção 2 do menu)
+
+Converte um AFN (sem ε) para um AFD via método dos subconjuntos. Você pode:
+- Carregar de JSON (mesmo formato do exemplo acima; não use `ε` aqui), ou
+- Informar pelo terminal.
+
+Detalhes:
+- Estados do AFD são subconjuntos de estados do AFN, nomeados como `q1,q2`.
+- Se uma transição não leva a nenhum estado, cria-se um estado morto `∅` que recebe laços para todo símbolo.
+- Se seu autômato tiver `ε`, primeiro use a opção 1 (AFN-ε → AFN).
+
