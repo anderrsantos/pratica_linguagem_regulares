@@ -59,6 +59,17 @@ O simulador suporta AFN e AFN-ε:
 - A palavra é aceita se, após consumir todos os símbolos (com fechos-ε quando existirem), algum estado alcançado é final.
 - Símbolos fora do alfabeto fazem a palavra ser rejeitada por padrão.
 
+## Converter Múltiplos Iniciais → AFN-ε (Opção 0 do menu)
+
+Esta opção transforma um autômato que possui múltiplos estados iniciais em um autômato de estado inicial único equivalente.
+
+O processo é simples:
+
+1.  Um **novo estado inicial** é criado (ex: `Q_novo`).
+2.  Este novo estado se torna o **único** estado inicial do autômato.
+3.  São adicionadas **transições-ε** (lambda) deste novo estado para *cada um* dos estados iniciais originais.
+4.  Todo o restante do autômato (alfabeto, estados finais e transições originais) é preservado.
+
 ## Converter AFN-ε → AFN (opção 1 do menu)
 
 Agora você pode montar o AFN-ε pelo terminal ou carregar de um arquivo JSON (mesmo formato descrito acima). O conversor aceita:
