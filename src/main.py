@@ -1,6 +1,10 @@
 from converterAFNEpAFN  import AFNEpAFN
 from converterAFNparaAFD import converter_afn_para_afd_cli
 from testar_palavra import testar_palavra_cli
+from converter_multi_para_afne import converter_multi_para_afne_cli
+from converterAFNEpAFN  import AFNEpAFN
+
+
 
 def main():
     while True:
@@ -21,7 +25,10 @@ def main():
             opcao_int = int(opcao)
             
             if opcao_int == 0:
-                continue
+                try:
+                    converter_multi_para_afne_cli()
+                except Exception as e:
+                    print(f"\nOcorreu um erro durante a conversão: {e}")
             elif opcao_int == 1:
                 try:
                     converterAFNEpAFD = AFNEpAFN()
