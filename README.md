@@ -17,6 +17,42 @@ Você pode testar palavras de duas formas:
 
 1) Carregar um autômato de um arquivo JSON (ex.: `automato.json`)
 2) Informar o autômato pelo terminal (alfabeto, estados, iniciais, finais e transições)
+3) Testar várias palavras a partir de um arquivo TXT (exemplo: `palavras.txt`)
+
+### Testar por arquivo TXT
+
+Você pode informar um arquivo `.txt` contendo uma palavra por linha. O programa irá testar cada palavra e mostrar se foi aceita ou rejeitada. Se alguma palavra tiver símbolos fora do alfabeto, será exibida uma mensagem de erro específica para ela.
+
+Exemplo de arquivo:
+
+```
+a
+b
+ab
+ba
+aba
+abc
+bba
+```
+
+Saída:
+```
+1: 'a' -> ACEITA
+2: 'b' -> REJEITA
+...
+6: 'abc' -> ERRO: contém símbolos fora do alfabeto: c
+```
+
+### Tratamento de erros
+
+O programa possui diversos tratamentos de erro para facilitar o uso e evitar resultados inesperados:
+
+- **Validação de símbolos**: Ao testar palavras (manual ou por arquivo), o programa verifica se todos os símbolos estão no alfabeto do autômato. Caso contrário, mostra erro e não simula aquela palavra.
+- **Carregamento de arquivos**: Mostra erro se o arquivo JSON ou TXT não existe, está mal formatado ou faltam chaves obrigatórias. Aceita formatos tolerantes no JSON (ex.: `alfabet0` como sinônimo de `alfabeto`).
+- **Conversão AFN-ε → AFN**: Se não houver nenhuma transição ε, avisa que o autômato já é um AFN normal e não realiza conversão.
+- **Conversão Múltiplos Iniciais → AFN-ε**: Se houver apenas um estado inicial, avisa que não é um autômato com múltiplos iniciais e não realiza conversão.
+- **Conversão AFN → AFD**: Impede conversão se o AFN tiver transições ε (pede para usar a opção AFN-ε → AFN antes).
+- **Menu principal e CLI**: Trata entradas inválidas (não numéricas ou fora do intervalo) e mostra mensagens amigáveis em caso de erro.
 
 ### Formato do JSON
 

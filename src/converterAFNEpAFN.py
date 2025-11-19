@@ -31,9 +31,9 @@ class AFNEpAFN:
 
 
     def tela_inicial(self):
-        print("\n=========================")
+        print("\n=================================================")
         print("Conversor AFNε → AFN (múltiplos estados iniciais)")
-        print("=========================\n")
+        print("=================================================\n")
 
         print("1 - Carregar AFN-ε de arquivo JSON (ex: automato.json)")
         print("2 - Informar AFN-ε pelo terminal")

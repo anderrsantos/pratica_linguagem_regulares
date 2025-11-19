@@ -205,9 +205,9 @@ def _as_list_of_str(obj, field: str) -> List[str]:
 
 
 def testar_palavra_cli():
-    print("\n=========================")
+    print("\n=============================================")
     print("Testar palavra em autômato (JSON ou terminal)")
-    print("=========================\n")
+    print("=============================================\n")
 
     print("1 - Carregar de arquivo JSON (ex: automato.json)")
     print("2 - Informar o autômato pelo terminal")
@@ -231,10 +231,40 @@ def testar_palavra_cli():
         print("Opção inválida.")
         return
 
+    print("\nComo deseja testar palavras?")
+    print("1 - Digitar manualmente")
+    print("2 - Ler de arquivo TXT (uma palavra por linha)")
+    modo_palavra = input("Escolha o modo (1/2): ").strip()
+
+    if modo_palavra == "2":
+        path_txt = input("Caminho do arquivo TXT: ").strip()
+        try:
+            with open(path_txt, "r", encoding="utf-8") as f:
+                linhas = f.readlines()
+        except Exception as e:
+            print(f"Erro ao ler arquivo TXT: {e}")
+            return
+        print(f"\nTestando palavras do arquivo '{path_txt}':\n")
+        for idx, linha in enumerate(linhas, 1):
+            w = linha.strip()
+            if not w:
+                continue
+            invalidos = [c for c in w if c not in automato.alfabeto]
+            if invalidos:
+                print(f"{idx}: '{w}' -> ERRO: contém símbolos fora do alfabeto: {', '.join(invalidos)}")
+                continue
+            aceito = automato.aceita(w)
+            print(f"{idx}: '{w}' -> {'ACEITA' if aceito else 'REJEITA'}")
+        return
+
     print("\nDigite palavras para testar. Use ENTER vazio para sair.")
     while True:
         w = input("Palavra: ")
         if w == "":
             break
+        invalidos = [c for c in w if c not in automato.alfabeto]
+        if invalidos:
+            print(f"Erro: A palavra contém símbolos fora do alfabeto: {', '.join(invalidos)}")
+            continue
         aceito = automato.aceita(w)
         print("Resultado:", "ACEITA" if aceito else "REJEITA")

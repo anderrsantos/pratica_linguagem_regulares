@@ -89,9 +89,9 @@ def converter_afn_para_afd(afn: Automato):
 
 
 def converter_afn_para_afd_cli():
-    print("\n=========================")
+    print("\n=============================================")
     print("Converter AFN → AFD (método dos subconjuntos)")
-    print("=========================\n")
+    print("=============================================\n")
 
     print("1 - Carregar AFN de arquivo JSON (ex: automato.json)")
     print("2 - Informar AFN pelo terminal")
