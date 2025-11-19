@@ -149,6 +149,12 @@ class AFNEpAFN:
         return fecho
 
     def converter(self):
+        # Verifica se há alguma transição epsilon
+        tem_epsilon = any(simbolo == 'ε' for (origem, simbolo) in self.transicoes)
+        if not tem_epsilon:
+            print("\nEste autômato já é um AFN normal (não possui transições ε). Nenhuma conversão foi realizada.")
+            return
+
         fechos = {estado: self.fecho_epsilon(estado) for estado in self.estados}
         nova_tabela = {estado: {simbolo: set() for simbolo in self.alfabeto} for estado in self.estados}
         novos_finais = set()
