@@ -159,27 +159,6 @@ Se você fornecer um **AFN** ou **AFN-ε** (via JSON), o programa:
   - AFN → AFD (método dos subconjuntos)
 - Então minimiza o AFD resultante
 
-### Informar AFD pelo terminal
-
-Ao escolher informar pelo terminal, forneça:
-
-```
-Alfabeto (ex: a,b): a,b
-Estados (ex: q0,q1,q2): q0,q1,q2,q3
-Estado inicial: q0
-Estados finais (ex: q2): q2,q3
-```
-
-Depois informe as transições no formato `origem,simbolo,destino`:
-```
-Transição: q0,a,q1
-Transição: q0,b,q0
-Transição: q1,a,q2
-Transição: q1,b,q1
-...
-Transição: fim
-```
-
 **Importante**: O autômato deve ser **determinístico** (sem ε-transições e sem múltiplos destinos para o mesmo par estado-símbolo).
 
 ## Estrutura do Projeto
