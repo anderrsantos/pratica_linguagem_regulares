@@ -1,9 +1,9 @@
 from testar_palavra import Automato, EPSILON 
 
 def converter_multi_para_afne_cli():
-    print("\n=========================")
+    print("\n====================================")
     print("Converter Múltiplos Iniciais → AFN-ε")
-    print("=========================\n")
+    print("====================================\n")
 
 
     print("1 - Carregar AFN de arquivo JSON (ex: automato.json)")

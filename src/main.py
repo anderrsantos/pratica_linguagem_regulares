@@ -8,7 +8,7 @@ from converter_minimizar_afd import minimizar_afd_cli
 def main():
     while True:
         print("\n=========================")
-        print("Linguagens Regulares")
+        print("          MENU             ")
         print("=========================")
 
         print("0 - Converter multiestado inicial para AFN-E")
