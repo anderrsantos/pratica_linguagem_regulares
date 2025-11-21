@@ -2,7 +2,7 @@ from converterAFNEpAFN import AFNEpAFN
 from converterAFNparaAFD import converter_afn_para_afd_cli
 from testar_palavra import testar_palavra_cli
 from converter_multi_para_afne import converter_multi_para_afne_cli
-from converter_minimizar_afd import minimizar_afd_cli3
+from converter_minimizar_afd import minimizar_afd_cli
 
 
 def main():
