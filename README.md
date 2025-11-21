@@ -11,6 +11,19 @@ No Linux:
 python3 src/main.py
 ```
 
+## Menu Principal
+
+O programa oferece as seguintes opções:
+
+```
+0 - Converter multiestado inicial para AFN-ε
+1 - Converter AFN-ε para AFN
+2 - Converter AFN para AFD
+3 - Minimizar AFD
+4 - Testar palavra
+5 - Sair
+```
+
 ## Testar palavra (opção 4 do menu)
 
 Você pode testar palavras de duas formas:
@@ -52,6 +65,7 @@ O programa possui diversos tratamentos de erro para facilitar o uso e evitar res
 - **Conversão AFN-ε → AFN**: Se não houver nenhuma transição ε, avisa que o autômato já é um AFN normal e não realiza conversão.
 - **Conversão Múltiplos Iniciais → AFN-ε**: Se houver apenas um estado inicial, avisa que não é um autômato com múltiplos iniciais e não realiza conversão.
 - **Conversão AFN → AFD**: Impede conversão se o AFN tiver transições ε (pede para usar a opção AFN-ε → AFN antes).
+- **Minimização de AFD**: Detecta automaticamente se o autômato é AFN ou AFN-ε e realiza as conversões necessárias antes de minimizar.
 - **Menu principal e CLI**: Trata entradas inválidas (não numéricas ou fora do intervalo) e mostra mensagens amigáveis em caso de erro.
 
 ### Formato do JSON
@@ -125,3 +139,138 @@ Detalhes:
 - Se uma transição não leva a nenhum estado, cria-se um estado morto `∅` que recebe laços para todo símbolo.
 - Se seu autômato tiver `ε`, primeiro use a opção 1 (AFN-ε → AFN).
 
+## Minimizar AFD (opção 3 do menu)
+
+Minimiza um Autômato Finito Determinístico (AFD) usando o **algoritmo de Hopcroft**, que utiliza refinamento de partições para agrupar estados equivalentes e gerar o AFD mínimo.
+
+### Como usar
+
+Você pode minimizar um AFD de duas formas:
+
+1. **Carregar de arquivo JSON**: Forneça um arquivo no formato padrão (mesmo formato das outras opções)
+2. **Informar pelo terminal**: Digite manualmente o alfabeto, estados, estado inicial, estados finais e transições
+
+### Conversão automática
+
+Se você fornecer um **AFN** ou **AFN-ε** (via JSON), o programa:
+- Detecta automaticamente que não é um AFD
+- Realiza as conversões necessárias:
+  - AFN-ε → AFN (remove ε-transições)
+  - AFN → AFD (método dos subconjuntos)
+- Então minimiza o AFD resultante
+
+### Informar AFD pelo terminal
+
+Ao escolher informar pelo terminal, forneça:
+
+```
+Alfabeto (ex: a,b): a,b
+Estados (ex: q0,q1,q2): q0,q1,q2,q3
+Estado inicial: q0
+Estados finais (ex: q2): q2,q3
+```
+
+Depois informe as transições no formato `origem,simbolo,destino`:
+```
+Transição: q0,a,q1
+Transição: q0,b,q0
+Transição: q1,a,q2
+Transição: q1,b,q1
+...
+Transição: fim
+```
+
+**Importante**: O autômato deve ser **determinístico** (sem ε-transições e sem múltiplos destinos para o mesmo par estado-símbolo).
+
+### O que o algoritmo faz
+
+O algoritmo de minimização:
+
+1. **Particiona estados inicialmente** em finais e não-finais
+2. **Refina as partições iterativamente**: separa estados que têm comportamentos diferentes (transições levam a blocos diferentes)
+3. **Agrupa estados equivalentes**: estados no mesmo bloco final são indistinguíveis
+4. **Constrói AFD mínimo**: cada bloco vira um estado (renomeados como S0, S1, S2...)
+
+### Tratamento de estado morto
+
+O algoritmo trata corretamente o **estado morto (∅)**:
+- Se existe um estado morto (sumidouro), ele só será mesclado com outros estados se forem realmente equivalentes
+- Caso contrário, permanece separado no AFD minimizado
+
+### Exemplo de saída
+
+```
+=========================
+AFD Minimizado
+=========================
+
+Alfabeto: ['a', 'b']
+Estados: ['S0', 'S1', 'S2']
+Estado Inicial: S0
+Estados Finais: ['S1']
+Transições:
+  S0 --a--> S1
+  S0 --b--> S0
+  S1 --a--> S1
+  S1 --b--> S2
+  S2 --a--> S1
+  S2 --b--> S0
+=========================
+
+Estados antes: 5
+Estados depois: 3
+Redução: 2 estado(s)
+```
+
+### Complexidade
+
+- **Tempo**: O(n·log(n)·|Σ|) onde n = número de estados, |Σ| = tamanho do alfabeto
+- **Espaço**: O(n²) no pior caso
+
+### Por que funciona?
+
+O algoritmo de Hopcroft garante correção porque:
+
+1. **Partição inicial correta**: Estados finais e não-finais nunca são equivalentes (comportamentos diferentes)
+2. **Refinamento por distinguibilidade**: Se dois estados vão para blocos diferentes com o mesmo símbolo, não são equivalentes
+3. **Completude**: Continua refinando até nenhuma partição poder ser subdividida
+4. **Invariante**: Estados no mesmo bloco sempre permanecem equivalentes durante todo o processo
+
+O resultado é o **menor AFD possível** que reconhece a mesma linguagem do AFD original.
+
+### Testes disponíveis
+
+Para testar a minimização, execute:
+
+```bash
+python3 testes_minimizacao.py
+```
+
+Os testes incluem:
+- Estados equivalentes simples
+- AFD com estado morto
+- Todos os estados finais
+- Nenhum estado final
+- Exemplo clássico de minimização
+
+## Estrutura do Projeto
+
+```
+projeto/
+├── src/
+│   ├── main.py                        # Menu principal
+│   ├── testar_palavra.py              # Simulador AFN/AFN-ε
+│   ├── converter_multi_para_afne.py   # Múltiplos iniciais → AFN-ε
+│   ├── converterAFNEpAFN.py           # AFN-ε → AFN
+│   ├── converterAFNparaAFD.py         # AFN → AFD
+│   └── converter_minimizar_afd.py     # Minimizar AFD
+├── testes_minimizacao.py              # Testes de minimização
+├── automato.json                      # Exemplo de autômato
+└── palavras.txt                       # Exemplo de palavras
+```
+
+## Referências
+
+- Hopcroft, J. E. (1971). "An n log n algorithm for minimizing states in a finite automaton"
+- Sipser, M. "Introduction to the Theory of Computation"
+- Hopcroft & Ullman "Introduction to Automata Theory, Languages, and Computation"
