@@ -3,6 +3,27 @@ program AutomatosFinitos;
 uses
   Tipos, Utilidades, LeitorJSON, Simulador, Conversores, SysUtils;
 
+const
+  DEFAULT_JSON_PATH = 'automatos/automato.json';
+
+function ResolverCaminhoJSON(const entrada: string): string;
+var
+  caminhoLimpo, fallback: string;
+begin
+  caminhoLimpo := Trim(entrada);
+  if caminhoLimpo = '' then
+    caminhoLimpo := DEFAULT_JSON_PATH;
+
+  if FileExists(caminhoLimpo) then
+    Exit(caminhoLimpo);
+
+  fallback := IncludeTrailingPathDelimiter('automatos') + ExtractFileName(caminhoLimpo);
+  if FileExists(fallback) then
+    Exit(fallback);
+
+  ResolverCaminhoJSON := caminhoLimpo;
+end;
+
 procedure ImprimirAutomato(var automato: TAutomato; titulo: string);
 var
   i, j: integer;
@@ -79,10 +100,9 @@ begin
   
   if modo = '1' then
   begin
-    Write('Caminho do arquivo JSON [automato.json]: ');
+    Write('Nome do arquivo JSON [automato.json]: ');
     ReadLn(caminho);
-    if Length(Trim(caminho)) = 0 then
-      caminho := 'automato.json';
+    caminho := ResolverCaminhoJSON(caminho);
     
     if not CarregarAutomatoJSON(caminho, automato) then
     begin
@@ -127,10 +147,9 @@ begin
   
   if modo = '1' then
   begin
-    Write('Caminho do arquivo JSON [automato.json]: ');
+    Write('Nome do arquivo JSON [automato.json]: ');
     ReadLn(caminho);
-    if Length(Trim(caminho)) = 0 then
-      caminho := 'automato.json';
+    caminho := ResolverCaminhoJSON(caminho);
     
     if not CarregarAutomatoJSON(caminho, automato) then
     begin
@@ -176,10 +195,9 @@ begin
   
   if modo = '1' then
   begin
-    Write('Caminho do arquivo JSON [automato.json]: ');
+    Write('Nome do arquivo JSON [automato.json]: ');
     ReadLn(caminho);
-    if Length(Trim(caminho)) = 0 then
-      caminho := 'automato.json';
+    caminho := ResolverCaminhoJSON(caminho);
     
     if not CarregarAutomatoJSON(caminho, automato) then
     begin
@@ -205,6 +223,71 @@ begin
     ImprimirAutomato(afd, 'AFD resultante');
 end;
 
+procedure MinimizarAFDCLI;
+var
+  automato, afd, minimizado: TAutomato;
+  modo, caminho: string;
+begin
+  InicializarAutomato(automato);
+  WriteLn;
+  WriteLn('=========================');
+  WriteLn('Minimizar AFD');
+  WriteLn('=========================');
+  WriteLn;
+  
+  WriteLn('1 - Carregar autômato de arquivo JSON (ex: automato.json)');
+  WriteLn('2 - Informar autômato pelo terminal');
+  Write('Escolha o modo (1/2): ');
+  ReadLn(modo);
+  
+  if modo = '1' then
+  begin
+    Write('Nome do arquivo JSON [automato.json]: ');
+    ReadLn(caminho);
+    caminho := ResolverCaminhoJSON(caminho);
+    
+    if not CarregarAutomatoJSON(caminho, automato) then
+    begin
+      WriteLn('Erro ao carregar JSON.');
+      Exit;
+    end;
+  end
+  else if modo = '2' then
+  begin
+    if not CarregarAutomatoInterativo(automato) then
+    begin
+      WriteLn('Erro ao criar autômato.');
+      Exit;
+    end;
+  end
+  else
+  begin
+    WriteLn('Opção inválida.');
+    Exit;
+  end;
+  
+  if PossuiTransicoesEpsilon(automato) then
+  begin
+    WriteLn('Autômato possui transições ε. Convertendo AFN-ε → AFN...');
+    if not ConverterAFNEparaAFN(automato) then
+      Exit;
+  end;
+  
+  if not EhDeterministico(automato) then
+  begin
+    WriteLn('Autômato não é determinístico. Convertendo AFN → AFD...');
+    if not ConverterAFNparaAFD(automato, afd) then
+    begin
+      WriteLn('Erro ao converter AFN para AFD.');
+      Exit;
+    end;
+    automato := afd;
+  end;
+  
+  if MinimizarAFD(automato, minimizado) then
+    ImprimirAutomato(minimizado, 'AFD minimizado');
+end;
+
 procedure TestarPalavraCLIMenu;
 var
   automato: TAutomato;
@@ -223,10 +306,9 @@ begin
   
   if modo = '1' then
   begin
-    Write('Caminho do arquivo JSON [automato.json]: ');
+    Write('Nome do arquivo JSON [automato.json]: ');
     ReadLn(caminho);
-    if Length(Trim(caminho)) = 0 then
-      caminho := 'automato.json';
+    caminho := ResolverCaminhoJSON(caminho);
     
     if not CarregarAutomatoJSON(caminho, automato) then
     begin
@@ -304,7 +386,7 @@ begin
       0: ConverterMultiParaAFNECLI;
       1: ConverterAFNEparaAFNCLI;
       2: ConverterAFNparaAFDCLI;
-      3: WriteLn('Funcionalidade ainda não implementada.');
+      3: MinimizarAFDCLI;
       4: TestarPalavraCLIMenu;
       5: begin
            WriteLn('Saindo...');

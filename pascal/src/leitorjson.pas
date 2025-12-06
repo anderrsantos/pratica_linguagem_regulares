@@ -179,11 +179,8 @@ begin
     end;
   end;
   
-  Flush(Output);
   Close(arquivo);
-  Flush(Output);
   CarregarAutomatoJSON := true;
-  WriteLn('ando TRUE!');
 end;
 
 function CarregarAutomatoInterativo(var automato: TAutomato): boolean;

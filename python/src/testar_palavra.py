@@ -1,8 +1,40 @@
 import json
+from pathlib import Path
 from typing import Dict, Set, Iterable, Tuple, List
 
 
 EPSILON = "ε"
+BASE_DIR = Path(__file__).resolve().parent
+AUTOMATOS_DIR = BASE_DIR.parent / "automatos"
+
+
+def _resolve_automato_path(raw_path: str) -> Path:
+    """Localiza o JSON informado, procurando também em python/automatos."""
+    trimmed = raw_path.strip()
+    if not trimmed:
+        trimmed = "automato.json"
+
+    provided = Path(trimmed)
+    name_only = provided.name
+
+    candidates = [provided]
+    if not provided.is_absolute():
+        candidates.extend(
+            [
+                (BASE_DIR / trimmed).resolve(),
+                (BASE_DIR.parent / trimmed).resolve(),
+                (AUTOMATOS_DIR / trimmed).resolve(),
+                (AUTOMATOS_DIR / name_only).resolve(),
+            ]
+        )
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    raise FileNotFoundError(
+        f"Arquivo '{trimmed}' não encontrado. Coloque-o ao lado do script ou em '{AUTOMATOS_DIR}'."
+    )
 
 
 class Automato:
@@ -62,7 +94,8 @@ class Automato:
         Também aceita transições como objetos: {"origem":"Q1","destino":"Q2","simbolo":"a"}.
         Aceita chave alternativa "alfabet0" (com zero) mapeando para "alfabeto".
         """
-        with open(path, "r", encoding="utf-8") as f:
+        json_path = _resolve_automato_path(path)
+        with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # tolerância: "alfabet0" -> "alfabeto"

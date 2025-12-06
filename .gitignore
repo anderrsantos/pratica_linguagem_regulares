@@ -1,2 +1,7 @@
 src/_pycache_
 .idea
+
+# Pascal build artifacts
+pascal/src/automatos
+pascal/src/*.o
+pascal/src/*.ppu

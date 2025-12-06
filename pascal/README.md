@@ -6,14 +6,21 @@ Implementação completa em Pascal (sem orientação a objetos) do simulador e c
 
 ```
 pascal/
-├── tipos.pas          - Definições de tipos e estruturas de dados
-├── utilidades.pas     - Funções auxiliares para manipulação de conjuntos
-├── leitorjson.pas     - Carregamento de autômatos (JSON e interativo)
-├── simulador.pas      - Simulação de AFN/AFN-ε e teste de palavras
-├── conversores.pas    - Conversores (Multi→AFN-ε, AFN-ε→AFN, AFN→AFD)
-├── main.pas           - Programa principal com menu
-├── Makefile           - Compilação automatizada
-└── README.md          - Este arquivo
+├── automatos/                 - Arquivos JSON de exemplo
+│   ├── automato.json
+│   ├── automato_afne.json
+│   ├── automato_afd.json
+│   └── multi_inicial.json
+├── src/                       - Código-fonte Pascal e artefatos auxiliares
+│   ├── tipos.pas
+│   ├── utilidades.pas
+│   ├── leitorjson.pas
+│   ├── simulador.pas
+│   ├── conversores.pas
+│   ├── main.pas
+│   └── palavras.txt (arquivo de teste de palavras)
+├── Makefile                   - Compilação automatizada
+└── README.md                  - Este arquivo
 ```
 
 ## Requisitos
@@ -49,10 +56,11 @@ fpc -O2 -omain.pas
 ## Execução
 
 ```bash
-./automatos
+./src/automatos
 ```
 
 Ou com make:
+Ou com `make run` (que já chama o executável dentro de `src/`):
 ```bash
 make run
 ```
@@ -72,9 +80,12 @@ make run
 2. **Converter AFN → AFD**
    - Método dos subconjuntos (construção de potências)
    - Cria estado morto (∅) quando necessário
-   - Estados do AFD nomeados como "Q1,Q2" (subconjuntos)
+   - Estados do AFD nomeados como "Q1,Q2" (combinação dos estados originais)
 
-3. **Minimizar AFD** (não implementado)
+3. **Minimizar AFD**
+   - Detecta automaticamente AFNs/AFN-ε, convertendo-os antes de minimizar
+   - Usa tabela de distinção (particionamento) para obter um AFD equivalente mínimo
+   - Estados resultantes recebem nomes `Q1`, `Q2`, ... seguindo o padrão dos demais módulos
 
 4. **Testar Palavra**
    - Suporte a AFN e AFN-ε
@@ -145,8 +156,7 @@ O programa implementa verificações para:
 
 1. **Estruturas de dados estáticas**: Arrays com tamanho fixo em vez de listas dinâmicas
 2. **Parser JSON simplificado**: Lê formato específico do projeto, não JSON genérico
-3. **Sem minimização de AFD**: Funcionalidade não implementada
-4. **Sintaxe Pascal**: Procedures/functions, begin/end, tipos explícitos
+3. **Sintaxe Pascal**: Procedures/functions, begin/end, tipos explícitos
 
 ## Exemplos de Uso
 
@@ -155,7 +165,7 @@ O programa implementa verificações para:
 1. Execute o programa
 2. Escolha opção 1
 3. Escolha modo 1 (JSON)
-4. Digite "automato.json" ou caminho do arquivo
+4. Digite "automatos/automato.json" ou caminho do arquivo
 5. Veja o AFN resultante sem epsilon
 ```
 
@@ -164,9 +174,9 @@ O programa implementa verificações para:
 1. Execute o programa
 2. Escolha opção 4
 3. Escolha modo 1 (JSON) para carregar autômato
-4. Digite "automato.json"
+4. Digite "automatos/automato.json"
 5. Escolha modo 2 (arquivo TXT)
-6. Digite "palavras.txt"
+6. Digite "src/palavras.txt"
 7. Veja resultados para cada palavra
 ```
 

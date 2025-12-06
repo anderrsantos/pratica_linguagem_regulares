@@ -3,17 +3,22 @@
 # Compilador
 FPC = fpc
 
-# Flags de compilação
-FPCFLAGS = -O2 -v0
+# Diretórios
+SRC_DIR = src
 
-# Arquivo principal
-MAIN = main.pas
+# Flags de compilação (inclui diretório das units)
+FPCFLAGS = -O2 -v0 -Fu$(SRC_DIR)
 
-# Executável
-TARGET = automatos
+# Arquivos fonte
+MAIN = $(SRC_DIR)/main.pas
+UNITS = $(SRC_DIR)/tipos.pas \
+	$(SRC_DIR)/utilidades.pas \
+	$(SRC_DIR)/leitorjson.pas \
+	$(SRC_DIR)/simulador.pas \
+	$(SRC_DIR)/conversores.pas
 
-# Units
-UNITS = tipos.pas utilidades.pas leitorjson.pas simulador.pas conversores.pas
+# Executável ficará dentro de src/
+TARGET = $(SRC_DIR)/automatos
 
 all: $(TARGET)
 
@@ -21,7 +26,7 @@ $(TARGET): $(MAIN) $(UNITS)
 	$(FPC) $(FPCFLAGS) -o$(TARGET) $(MAIN)
 
 clean:
-	rm -f *.o *.ppu $(TARGET)
+	rm -f $(SRC_DIR)/*.o $(SRC_DIR)/*.ppu $(TARGET)
 
 run: $(TARGET)
 	./$(TARGET)

@@ -13,6 +13,12 @@ function ConverterAFNEparaAFN(var automato: TAutomato): boolean;
 { Converter AFN → AFD }
 function ConverterAFNparaAFD(var automato: TAutomato; var afd: TAutomato): boolean;
 
+{ Minimizar AFD }
+function MinimizarAFD(var automato: TAutomato; var afdMin: TAutomato): boolean;
+
+function PossuiTransicoesEpsilon(var automato: TAutomato): boolean;
+function EhDeterministico(var automato: TAutomato): boolean;
+
 implementation
 
 { Calcula o fecho-epsilon de um estado específico }
@@ -32,6 +38,7 @@ begin
   
   { Inicializa pilha }
   topoPilha := 1;
+  pilha[topoPilha] := estado;
   
   while topoPilha > 0 do
   begin
@@ -223,10 +230,50 @@ begin
   ConjuntosIguais := true;
 end;
 
+function PossuiTransicoesEpsilon(var automato: TAutomato): boolean;
+var
+  i: integer;
+begin
+  PossuiTransicoesEpsilon := false;
+  for i := 1 to automato.transicoes.count do
+    if automato.transicoes.items[i].simbolo = EPSILON then
+    begin
+      PossuiTransicoesEpsilon := true;
+      Exit;
+    end;
+end;
+
+function EhDeterministico(var automato: TAutomato): boolean;
+var
+  i: integer;
+begin
+  EhDeterministico := false;
+  if automato.iniciais.count <> 1 then
+    Exit;
+  if PossuiTransicoesEpsilon(automato) then
+    Exit;
+  for i := 1 to automato.transicoes.count do
+    if automato.transicoes.items[i].destinos.count <> 1 then
+      Exit;
+  EhDeterministico := true;
+end;
+
+function ObterIndiceEstado(var automato: TAutomato; estado: string): integer;
+var
+  i: integer;
+begin
+  ObterIndiceEstado := -1;
+  for i := 1 to automato.estados.count do
+    if automato.estados.items[i] = estado then
+    begin
+      ObterIndiceEstado := i;
+      Exit;
+    end;
+end;
+
 function ConverterAFNparaAFD(var automato: TAutomato; var afd: TAutomato): boolean;
 var
   i, j, k, m: integer;
-  temEpsilon: boolean;
   fila: array[1..MAX_ESTADOS] of TConjuntoEstados;
   visitados: array[1..MAX_ESTADOS] of TConjuntoEstados;
   numFila, numVisitados: integer;
@@ -234,22 +281,13 @@ var
   nomeAtual, nomeProximo: string;
   destinos: TDestinos;
   encontrado: boolean;
-  idxVisitado: integer;
   estadoMorto: boolean;
 begin
   ConverterAFNparaAFD := false;
   InicializarAutomato(afd);
   
   { Verifica presença de epsilon }
-  temEpsilon := false;
-  for i := 1 to automato.transicoes.count do
-    if automato.transicoes.items[i].simbolo = EPSILON then
-    begin
-      temEpsilon := true;
-      Break;
-    end;
-  
-  if temEpsilon then
+  if PossuiTransicoesEpsilon(automato) then
   begin
     WriteLn('AFN contém transições ε. Use a conversão AFN-ε → AFN antes (opção 1).');
     Exit;
@@ -352,6 +390,178 @@ begin
   AdicionarEstado(afd.iniciais, NomeSubconjunto(automato.iniciais));
   
   ConverterAFNparaAFD := true;
+end;
+
+function MinimizarAFD(var automato: TAutomato; var afdMin: TAutomato): boolean;
+var
+  numEstados, numSimbolos: integer;
+  destinosIdx: array[1..MAX_ESTADOS, 1..MAX_ALFABETO] of integer;
+  marcados: array[1..MAX_ESTADOS, 1..MAX_ESTADOS] of boolean;
+  finaisBool: array[1..MAX_ESTADOS] of boolean;
+  grupos: array[1..MAX_ESTADOS] of integer;
+  representante: array[1..MAX_ESTADOS] of integer;
+  grupoEstados: array[1..MAX_ESTADOS] of TConjuntoEstados;
+  grupoNomes: array[1..MAX_ESTADOS] of string;
+  i, j, k: integer;
+  destinos: TDestinos;
+  di, dj, a, b: integer;
+  mudou: boolean;
+  grupoEncontrado, grupoCount: integer;
+  estadoInicialIdx, grupoInicial: integer;
+  repIdx, destIdx, destGrupo: integer;
+begin
+  MinimizarAFD := false;
+  if automato.estados.count = 0 then
+  begin
+    WriteLn('Autômato não possui estados para minimizar.');
+    Exit;
+  end;
+  
+  if not EhDeterministico(automato) then
+  begin
+    WriteLn('Autômato fornecido não é determinístico. Converta para AFD antes de minimizar.');
+    Exit;
+  end;
+  
+  numEstados := automato.estados.count;
+  numSimbolos := automato.alfabeto.count;
+  
+  for i := 1 to MAX_ESTADOS do
+  begin
+    for j := 1 to MAX_ALFABETO do
+      destinosIdx[i][j] := 0;
+    for j := 1 to MAX_ESTADOS do
+      marcados[i][j] := false;
+    grupos[i] := 0;
+    representante[i] := 0;
+    InicializarConjuntoEstados(grupoEstados[i]);
+    grupoNomes[i] := '';
+  end;
+  
+  for i := 1 to numEstados do
+    finaisBool[i] := ContemEstado(automato.finais, automato.estados.items[i]);
+  
+  for i := 1 to numEstados do
+    for j := 1 to numSimbolos do
+    begin
+      destinos := ObterDestinos(automato.transicoes, automato.estados.items[i], automato.alfabeto.items[j]);
+      if destinos.count > 0 then
+      begin
+        destIdx := ObterIndiceEstado(automato, destinos.items[1]);
+        if destIdx = -1 then
+          destIdx := 0;
+        destinosIdx[i][j] := destIdx;
+      end
+      else
+        destinosIdx[i][j] := 0;
+    end;
+  
+  for i := 1 to numEstados do
+    for j := i + 1 to numEstados do
+      if finaisBool[i] <> finaisBool[j] then
+        marcados[i][j] := true;
+  
+  repeat
+    mudou := false;
+    for i := 1 to numEstados do
+      for j := i + 1 to numEstados do
+        if not marcados[i][j] then
+        begin
+          for k := 1 to numSimbolos do
+          begin
+            di := destinosIdx[i][k];
+            dj := destinosIdx[j][k];
+            if (di = 0) and (dj = 0) then
+              Continue;
+            if (di = 0) xor (dj = 0) then
+            begin
+              marcados[i][j] := true;
+              mudou := true;
+              Break;
+            end;
+            if di = dj then
+              Continue;
+            a := di;
+            b := dj;
+            if a > b then
+            begin
+              a := dj;
+              b := di;
+            end;
+            if marcados[a][b] then
+            begin
+              marcados[i][j] := true;
+              mudou := true;
+              Break;
+            end;
+          end;
+        end;
+  until not mudou;
+  
+  grupoCount := 0;
+  for i := 1 to numEstados do
+  begin
+    grupoEncontrado := 0;
+    for j := 1 to i - 1 do
+      if not marcados[j][i] then
+      begin
+        grupoEncontrado := grupos[j];
+        Break;
+      end;
+    if grupoEncontrado = 0 then
+    begin
+      Inc(grupoCount);
+      grupos[i] := grupoCount;
+      representante[grupoCount] := i;
+    end
+    else
+      grupos[i] := grupoEncontrado;
+    AdicionarEstado(grupoEstados[grupos[i]], automato.estados.items[i]);
+  end;
+  
+  InicializarAutomato(afdMin);
+  afdMin.alfabeto := automato.alfabeto;
+  for i := 1 to grupoCount do
+  begin
+    grupoNomes[i] := 'Q' + IntToStr(i);
+    AdicionarEstado(afdMin.estados, grupoNomes[i]);
+  end;
+  
+  InicializarConjuntoEstados(afdMin.iniciais);
+  estadoInicialIdx := ObterIndiceEstado(automato, automato.iniciais.items[1]);
+  if estadoInicialIdx <> -1 then
+  begin
+    grupoInicial := grupos[estadoInicialIdx];
+    if grupoInicial <> 0 then
+      AdicionarEstado(afdMin.iniciais, grupoNomes[grupoInicial]);
+  end;
+  
+  for i := 1 to grupoCount do
+    for j := 1 to grupoEstados[i].count do
+      if ContemEstado(automato.finais, grupoEstados[i].items[j]) then
+      begin
+        AdicionarEstado(afdMin.finais, grupoNomes[i]);
+        Break;
+      end;
+  
+  for i := 1 to grupoCount do
+  begin
+    repIdx := representante[i];
+    if repIdx = 0 then
+      Continue;
+    for j := 1 to numSimbolos do
+    begin
+      destIdx := destinosIdx[repIdx][j];
+      if destIdx = 0 then
+        Continue;
+      destGrupo := grupos[destIdx];
+      if destGrupo = 0 then
+        Continue;
+      AdicionarTransicao(afdMin.transicoes, grupoNomes[i], automato.alfabeto.items[j], grupoNomes[destGrupo]);
+    end;
+  end;
+  
+  MinimizarAFD := true;
 end;
 
 end.
